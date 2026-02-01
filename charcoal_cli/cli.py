@@ -21,6 +21,12 @@ from charcoal_cli.commands.stack import stack
 from charcoal_cli.commands.user import user
 from charcoal_cli.commands.log import log
 
+# Import standalone commands
+from charcoal_cli.commands.auth import auth
+from charcoal_cli.commands.completion import completion
+from charcoal_cli.commands.demo import demo
+from charcoal_cli.commands.fish import fish
+
 # Import subcommands
 from charcoal_cli.commands.upstack_commands.onto import onto
 from charcoal_cli.commands.upstack_commands.test import test as upstack_test
@@ -81,3 +87,9 @@ main.add_command(downstack, name="ds")  # Alias for downstack
 main.add_command(stack)
 main.add_command(stack, name="s")  # Alias for stack
 main.add_command(user)
+
+# Register standalone commands
+main.add_command(auth)
+main.add_command(completion)
+main.add_command(demo)
+main.add_command(fish)
