@@ -1,1 +1,1 @@
-"""Log subcommands package."""
+"""Log subcommands."""

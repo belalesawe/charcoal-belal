@@ -3,23 +3,9 @@
 This module provides color definitions used in log visualization and other
 terminal output. The colors are defined as RGB tuples compatible with ANSI
 color codes.
-
-Design Decision: Using colorama for cross-platform color support with manual
-width handling via shutil.get_terminal_size(). This provides a lighter-weight
-approach compared to rich library while ensuring proper terminal detection.
 """
 
-import os
-import shutil
-import sys
 from typing import Tuple
-
-try:
-    import colorama
-    colorama.init()
-    COLORAMA_AVAILABLE = True
-except ImportError:
-    COLORAMA_AVAILABLE = False
 
 # RGB color tuples for graphite log visualization
 # These colors are used in a cycling pattern for branch visualization
@@ -64,136 +50,8 @@ def get_log_short_color(index: int) -> str:
     """
     color_index = (index // 2) % len(GRAPHITE_COLORS)
     r, g, b = GRAPHITE_COLORS[color_index]
-    return safe_rgb_to_ansi(r, g, b)
+    return rgb_to_ansi(r, g, b)
 
 
-# Additional ANSI color codes
+# ANSI reset code
 RESET = "\033[0m"
-CYAN = "\033[96m"
-YELLOW = "\033[93m"
-GREEN = "\033[92m"
-RED = "\033[91m"
-BLUE = "\033[94m"
-MAGENTA = "\033[95m"
-GRAY = "\033[90m"
-
-
-def get_branch_color(branch_name: str, context) -> str:
-    """Get color for a branch based on its status.
-
-    Args:
-        branch_name: Name of the branch
-        context: Application context with engine
-
-    Returns:
-        ANSI color escape sequence
-    """
-    # Current branch is cyan
-    if hasattr(context, 'engine') and context.engine.current_branch == branch_name:
-        return CYAN
-
-    # Untracked branches are yellow
-    if hasattr(context, 'engine') and hasattr(context.engine, 'is_branch_tracked'):
-        if not context.engine.is_branch_tracked(branch_name):
-            return YELLOW
-
-    return ""
-
-
-def supports_color() -> bool:
-    """Check if the terminal supports color output.
-
-    Returns:
-        True if colors are supported, False otherwise
-    """
-    # Check if stdout is a TTY
-    if not hasattr(sys.stdout, 'isatty') or not sys.stdout.isatty():
-        return False
-
-    # Check NO_COLOR environment variable
-    if os.environ.get('NO_COLOR'):
-        return False
-
-    # Check TERM environment variable
-    term = os.environ.get('TERM', '')
-    if term in ('dumb', 'unknown'):
-        return False
-
-    # If colorama is available, it handles platform-specific color support
-    if COLORAMA_AVAILABLE:
-        return True
-
-    # On non-Windows platforms, most terminals support color
-    return sys.platform != 'win32'
-
-
-def supports_truecolor() -> bool:
-    """Check if the terminal supports 24-bit RGB color (truecolor).
-
-    Returns:
-        True if truecolor is supported, False otherwise
-    """
-    if not supports_color():
-        return False
-
-    # Check COLORTERM environment variable
-    colorterm = os.environ.get('COLORTERM', '')
-    if colorterm in ('truecolor', '24bit'):
-        return True
-
-    # Check for terminals known to support truecolor
-    term = os.environ.get('TERM', '')
-    if any(x in term for x in ['256color', 'truecolor', '24bit']):
-        return True
-
-    return False
-
-
-def get_terminal_width() -> int:
-    """Get the width of the terminal in characters.
-
-    Returns:
-        Terminal width, defaults to 80 if cannot be determined
-    """
-    try:
-        size = shutil.get_terminal_size(fallback=(80, 24))
-        return size.columns
-    except Exception:
-        return 80
-
-
-def safe_rgb_to_ansi(r: int, g: int, b: int) -> str:
-    """Convert RGB to ANSI with fallback for terminals without truecolor.
-
-    Args:
-        r: Red component (0-255)
-        g: Green component (0-255)
-        b: Blue component (0-255)
-
-    Returns:
-        ANSI escape code string for the color, or empty string if unsupported
-    """
-    if not supports_color():
-        return ""
-
-    if supports_truecolor():
-        return rgb_to_ansi(r, g, b)
-
-    # Fallback to basic ANSI colors for terminals without truecolor
-    # Map RGB to closest basic color
-    if r > 200 and g > 200 and b > 200:
-        return "\033[97m"  # Bright white
-    elif r > 200 and g < 100 and b < 100:
-        return "\033[91m"  # Bright red
-    elif r < 100 and g > 200 and b < 100:
-        return "\033[92m"  # Bright green
-    elif r < 100 and g < 100 and b > 200:
-        return "\033[94m"  # Bright blue
-    elif r > 200 and g > 200 and b < 100:
-        return "\033[93m"  # Bright yellow
-    elif r < 100 and g > 200 and b > 200:
-        return CYAN  # Cyan
-    elif r > 200 and g < 100 and b > 200:
-        return MAGENTA  # Magenta
-    else:
-        return ""  # Default color

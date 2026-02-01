@@ -1,4 +1,4 @@
-"""Default log command.
+"""Log default command.
 
 Log all branches tracked by Charcoal, showing dependencies and info for each.
 """
@@ -46,13 +46,19 @@ def default(
     steps: int | None,
     show_untracked: bool,
 ) -> None:
-    """Log all branches tracked by Charcoal, showing dependencies and info for each.
+    """Log all branches tracked by Charcoal, showing dependencies and info.
 
-    This is the default log view that shows full branch information.
+    This is the default log view with full information for each branch.
+
+    Args:
+        reverse: Print the log upside down
+        stack: Only show ancestors and descendants of current branch
+        steps: Number of levels to show upstack and downstack
+        show_untracked: Include untracked branches
     """
     context = create_context()
 
-    # Determine which branch to start from
+    # Determine starting branch based on options
     if steps or stack:
         branch_name = context.engine.current_branch_precondition
     else:

@@ -100,15 +100,11 @@ def log_for_conflict_status(rebase_head: str, context: TContext) -> None:
         context.splog.info(line)
 
 
-def interactive_branch_selection(
+async def interactive_branch_selection(
     opts: dict,
     context: TContext,
 ) -> str:
     """Interactive branch selection with autocomplete.
-
-    Note: This function is synchronous. In the full implementation,
-    it would integrate with an async prompt system, but for now it
-    uses the synchronous stub.
 
     Args:
         opts: Options including:
@@ -120,8 +116,6 @@ def interactive_branch_selection(
     Returns:
         Selected branch name
     """
-    import re
-
     message = opts["message"]
     omit_current = opts.get("omitCurrentBranch", False)
     show_untracked = opts.get("showUntracked", False)
@@ -143,11 +137,13 @@ def interactive_branch_selection(
     choices = []
     for line in stack_lines:
         # Strip ANSI codes and extract branch name (last part after spaces)
-        clean_line = re.sub(r'\033\[[0-9;]+m', '', line)
+        clean_line = line
+        # Simple ANSI stripping
+        import re
+        clean_line = re.sub(r'\033\[[0-9;]+m', '', clean_line)
         # Branch name is after the last "  " sequence
         branch_name = clean_line[clean_line.rfind("  ") + 2:].strip()
-        if branch_name:  # Only add non-empty branch names
-            choices.append({"title": line, "value": branch_name})
+        choices.append({"title": line, "value": branch_name})
 
     # Add untracked branches
     if show_untracked:
@@ -166,29 +162,14 @@ def interactive_branch_selection(
             initial = i
             break
 
-    # Use prompts system (synchronous in stub implementation)
-    # In real implementation this would be async but we keep it sync for now
-    import asyncio
-    try:
-        loop = asyncio.get_event_loop()
-        result = loop.run_until_complete(context.prompts({
-            "type": "autocomplete",
-            "name": "branch",
-            "message": message,
-            "choices": choices,
-            "initial": initial,
-        }))
-    except RuntimeError:
-        # No event loop, call directly (works with stub)
-        loop = asyncio.new_event_loop()
-        result = loop.run_until_complete(context.prompts({
-            "type": "autocomplete",
-            "name": "branch",
-            "message": message,
-            "choices": choices,
-            "initial": initial,
-        }))
-        loop.close()
+    # Use prompts system
+    result = await context.prompts({
+        "type": "autocomplete",
+        "name": "branch",
+        "message": message,
+        "choices": choices,
+        "initial": initial,
+    })
 
     chosen_branch = result["branch"]
     context.splog.debug(f"Selected {chosen_branch}")
@@ -368,12 +349,8 @@ def get_branch_lines(args: dict, context: TContext) -> list[str]:
         try:
             from charcoal_cli.actions.show_branch import get_branch_info
             branch_info = get_branch_info(branch_name, context)
-            if branch_info:
-                line = f"{indent_str}◯ {branch_name} - {branch_info}"
-            else:
-                line = f"{indent_str}◯ {branch_name}"
-        except (ImportError, AttributeError):
-            # If show_branch module is not available, just show branch name
+            line = f"{indent_str}◯ {branch_name} - {branch_info}"
+        except:
             line = f"{indent_str}◯ {branch_name}"
 
     return [line]

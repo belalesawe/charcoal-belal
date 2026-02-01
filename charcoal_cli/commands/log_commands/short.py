@@ -1,6 +1,6 @@
 """Log short command.
 
-Log all stacks tracked by Charcoal, arranged to show dependencies.
+Display all stacks tracked by Charcoal, arranged to show dependencies.
 """
 
 import click
@@ -16,7 +16,7 @@ from charcoal_cli.lib.context import create_context
     "--classic",
     is_flag=True,
     default=False,
-    help="Use the old logging style, which runs out of screen real estate quicker. Other options will not work in classic mode.",
+    help="Use the old logging style, which runs out of screen real estate quicker.",
 )
 @click.option(
     "-r",
@@ -57,15 +57,19 @@ def short(
 ) -> None:
     """Log all stacks tracked by Charcoal, arranged to show dependencies.
 
-    This is the compact short view that uses box-drawing characters for visualization.
+    Args:
+        classic: Use the old logging style
+        reverse: Print the log upside down
+        stack: Only show ancestors and descendants of current branch
+        steps: Number of levels to show upstack and downstack
+        show_untracked: Include untracked branches
     """
     context = create_context()
 
     if classic:
-        # Use classic logging style
         log_short_classic(context)
     else:
-        # Determine which branch to start from
+        # Determine starting branch based on options
         if steps or stack:
             branch_name = context.engine.current_branch_precondition
         else:

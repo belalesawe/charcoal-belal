@@ -18,6 +18,7 @@ def main(ctx: click.Context, debug: bool, quiet: bool) -> None:
 from charcoal_cli.commands.upstack import upstack
 from charcoal_cli.commands.downstack import downstack
 from charcoal_cli.commands.stack import stack
+from charcoal_cli.commands.user import user
 from charcoal_cli.commands.log import log
 
 # Import subcommands
@@ -30,6 +31,14 @@ from charcoal_cli.commands.stack_commands.test import test as stack_test
 from charcoal_cli.commands.log_commands.default import default as log_default
 from charcoal_cli.commands.log_commands.short import short as log_short
 from charcoal_cli.commands.log_commands.long import long as log_long
+from charcoal_cli.commands.user_commands.editor import editor
+from charcoal_cli.commands.user_commands.pager import pager
+from charcoal_cli.commands.user_commands.tips import tips
+from charcoal_cli.commands.user_commands.branch_date import branch_date
+from charcoal_cli.commands.user_commands.branch_prefix import branch_prefix
+from charcoal_cli.commands.user_commands.branch_replacement import branch_replacement
+from charcoal_cli.commands.user_commands.restack_date import restack_date
+from charcoal_cli.commands.user_commands.submit_body import submit_body
 
 # Register subcommands to their groups
 upstack.add_command(onto)
@@ -52,6 +61,16 @@ log.add_command(log_short, name="s")  # Alias for short
 log.add_command(log_long)
 log.add_command(log_long, name="l")  # Alias for long
 
+# Register user subcommands
+user.add_command(editor)
+user.add_command(pager)
+user.add_command(tips)
+user.add_command(branch_date)
+user.add_command(branch_prefix)
+user.add_command(branch_replacement)
+user.add_command(restack_date)
+user.add_command(submit_body)
+
 # Register command groups with main CLI
 main.add_command(log)
 main.add_command(log, name="l")  # Alias for log
@@ -61,3 +80,4 @@ main.add_command(downstack)
 main.add_command(downstack, name="ds")  # Alias for downstack
 main.add_command(stack)
 main.add_command(stack, name="s")  # Alias for stack
+main.add_command(user)
