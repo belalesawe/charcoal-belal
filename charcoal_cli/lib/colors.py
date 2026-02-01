@@ -53,5 +53,34 @@ def get_log_short_color(index: int) -> str:
     return rgb_to_ansi(r, g, b)
 
 
-# ANSI reset code
+# Additional ANSI color codes
 RESET = "\033[0m"
+CYAN = "\033[96m"
+YELLOW = "\033[93m"
+GREEN = "\033[92m"
+RED = "\033[91m"
+BLUE = "\033[94m"
+MAGENTA = "\033[95m"
+GRAY = "\033[90m"
+
+
+def get_branch_color(branch_name: str, context) -> str:
+    """Get color for a branch based on its status.
+
+    Args:
+        branch_name: Name of the branch
+        context: Application context with engine
+
+    Returns:
+        ANSI color escape sequence
+    """
+    # Current branch is cyan
+    if hasattr(context, 'engine') and context.engine.current_branch == branch_name:
+        return CYAN
+
+    # Untracked branches are yellow
+    if hasattr(context, 'engine') and hasattr(context.engine, 'is_branch_tracked'):
+        if not context.engine.is_branch_tracked(branch_name):
+            return YELLOW
+
+    return ""
